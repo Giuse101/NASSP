@@ -221,6 +221,11 @@ DWORD IntegralLights_CMVC_Ordeal[] = {
 	VC_MAT_Ordeal_Lighting
 };
 
+// CM-COAS-CDR.msh
+DWORD CMVC_WINDOWSHADE[] = {
 
+	// TODO Material List
+	0
+};
 
 #endif // !__EMISSIONLISTCMVC
