@@ -157,7 +157,12 @@ public:
 	void SaveState(FILEHANDLE scn, char *start_str, char *end_str);
 	void LoadState(FILEHANDLE scn, char *end_str);
 
-	char *GetProg() { return Prog; };
+	char* GetProg() { return Prog; };
+	char* GetVerb() { return Verb; };
+	char* GetNoun() { return Noun; };
+	char* GetR1() { return R1; };
+	char* GetR2() { return R2; };
+	char* GetR3() { return R3; };
 
 protected:
 
