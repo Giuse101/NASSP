@@ -810,7 +810,7 @@ void LEMCabinRepressValve::SystemTimestep(double simdt)
 		bool repressinhibit = false;
 
 		//LFM-516: LM-7 and later don't have the inhibit
-		if (lem->pMission->GetLMSystemsVersion() <= 6)
+		if (lem->pMission->GetLMNumber() <= 6)
 		{
 			//Both in EGRESS
 			if (pressRegulatorASwitch->GetState() == 0 && pressRegulatorBSwitch->GetState() == 0) repressinhibit = true;
@@ -1160,7 +1160,7 @@ void LEMCabinFan::SystemTimestep(double simdt)
 
 void LEMCabinFan::CabinFanSound()
 {
-	cabinfansound.play(200);
+	cabinfansound.play(200.0 / 255.0);
 }
 
 void LEMCabinFan::StopCabinFanSound()
