@@ -432,10 +432,20 @@ void SaturnFuelCellMeter::Init(SURFHANDLE surf, SwitchRow &row, Saturn *s, Rotat
 
 double SaturnFuelCellH2FlowMeter::QueryValue()
 {
-	FuelCellStatus fc;
-	Sat->GetFuelCellStatus(FuelCellIndicatorsSwitch->GetState() + 1, fc);
+	//please redo this with FuelCellIndicatorsSwitch chosing which FlowSensor powers the gauge or something less horrible than my if structure
+	double value = 0.0;
+	int state = FuelCellIndicatorsSwitch->GetState();
+	if (state == 0) {
+		value = Sat->FCH2FlowSensor1.Voltage();
+	}
+	else if (state == 1) {
+		value = Sat->FCH2FlowSensor2.Voltage();
+	}
+	else {
+		value = Sat->FCH2FlowSensor3.Voltage();
+	}
 
-	return fc.H2FlowLBH; 
+	return value*0.04;
 }
 
 void SaturnFuelCellH2FlowMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
@@ -451,10 +461,20 @@ void SaturnFuelCellH2FlowMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 
 double SaturnFuelCellO2FlowMeter::QueryValue()
 {
-	FuelCellStatus fc;
-	Sat->GetFuelCellStatus(FuelCellIndicatorsSwitch->GetState() + 1, fc);
+	//please redo this with FuelCellIndicatorsSwitch chosing which FlowSensor powers the gauge or something less horrible than my if structure
+	double value = 0.0;
+	int state = FuelCellIndicatorsSwitch->GetState();
+	if (state == 0) {
+		value = Sat->FCO2FlowSensor1.Voltage();
+	}
+	else if (state == 1) {
+		value = Sat->FCO2FlowSensor2.Voltage();
+	}
+	else {
+		value = Sat->FCO2FlowSensor3.Voltage();
+	}
 
-	return fc.O2FlowLBH; 
+	return value/3.125;
 }
 
 void SaturnFuelCellO2FlowMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
@@ -1178,12 +1198,12 @@ void SaturnSPSTempMeter::Init(SURFHANDLE surf, SwitchRow &row, Saturn *s, e_obje
 
 double SaturnSPSTempMeter::QueryValue()
 {
-	return Sat->GetSPSPropellant()->GetPropellantLineTempF();
+	return Sat->SPSFuelFeedTempSensor.Voltage();
 }
 
 void SaturnSPSTempMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	oapiBlt(drawSurface, NeedleSurface, 0, (109 - (int)(v / 200.0 * 103.0)), 0, 0, 10, 10, SURF_PREDEF_CK);
+	oapiBlt(drawSurface, NeedleSurface, 0, (109 - (int)(v / 5.0 * 103.0)), 0, 0, 10, 10, SURF_PREDEF_CK);
 }
 
 
@@ -1325,6 +1345,8 @@ double SaturnSystemTestMeter::QueryValue()
 	case 4:
 		switch (right)
 		{
+		case 0:	//PRESS BAT COMPARTMENT (MANIF)
+			return Sat->BatteryManifoldPressureSensor.Voltage();
 		case 1:	//BAT RLY BUS VOLT
 			return Sat->sce.GetVoltage(0, 4);
 		case 3:	//CSM TO LM CURRENT
@@ -1334,8 +1356,8 @@ double SaturnSystemTestMeter::QueryValue()
 	case 5:
 		switch (right)
 		{
-		case 0:	//SPS OX LINE TEMP
-			val = Sat->pcm.measure(10, TLM_A, 120);
+		case 0:	//TEMP ENGINE OXIDIZER FEED LINE
+			return Sat->SPSOxidizerFeedTempSensor.Voltage();
 			break;
 		case 2:	//TEMP JET 24 -P ENG INJECTOR SYS 2
 			return Sat->CMRCSEngine24TempSensor.Voltage();

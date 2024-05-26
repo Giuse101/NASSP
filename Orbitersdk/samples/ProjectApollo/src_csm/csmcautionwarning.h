@@ -35,8 +35,8 @@
 /// \ingroup InternalInterface
 ///
 typedef struct {
-	double H2FlowLBH;			///< H2 flow in pounds per hour.
-	double O2FlowLBH;			///< O2 flow in pounds per hour.
+	double TempF;				///< Temperature in fahrenheit.
+	double CondenserTempF;		///< Condensor temperature in fahrenheit.
 	double CoolingTempF;		///< Cooling temperature in fahrenheit.
 	double RadiatorTempInF;		///< Radiator input temperature in fahrenheit.
 	double RadiatorTempOutF;	///< Radiator output temperature in fahrenheit.
@@ -135,6 +135,7 @@ protected:
 	int SPSPressCheckCount;
 	int CryoPressCheckCount;
 	int GlycolTempCheckCount;
+	int SuitCompDPHighCheckCount;
 	int FuelCellCheckCount[4];
 	bool ACBus1Alarm, ACBus2Alarm;
 	bool ACBus1Reset, ACBus2Reset;
@@ -233,6 +234,7 @@ protected:
 #define CSM_CWS_SM_RCS_B			17			///< CSM RCS quad B warning light.
 #define CSM_CWS_SM_RCS_C			18			///< CSM RCS quad C warning light.
 #define CSM_CWS_SM_RCS_D			19			///< CSM RCS quad D warning light.
+#define CSM_CWS_SPS_FLANGE_TEMP_HI	30			///< CSM SPS injector flange temperature warning light.
 #define CSM_CWS_FC1_LIGHT			31			///< CSM Fuel Cell 1 warning light.
 #define CSM_CWS_FC2_LIGHT			32			///< CSM Fuel Cell 2 warning light.
 #define CSM_CWS_FC3_LIGHT			33			///< CSM Fuel Cell 3 warning light.

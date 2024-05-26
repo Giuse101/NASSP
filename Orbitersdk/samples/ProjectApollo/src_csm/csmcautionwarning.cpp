@@ -54,6 +54,7 @@ CSMCautionWarningSystem::CSMCautionWarningSystem(Sound &mastersound, Sound &butt
 	SPSPressCheckCount = 0;
 	CryoPressCheckCount = 0;
 	GlycolTempCheckCount = 0;
+	SuitCompDPHighCheckCount = 0;
 	for (int i = 0; i < 4; i++)
 		FuelCellCheckCount[i] = 0;
 
@@ -72,18 +73,31 @@ CSMCautionWarningSystem::CSMCautionWarningSystem(Sound &mastersound, Sound &butt
 // Check status of a fuel cell.
 //
 
-bool CSMCautionWarningSystem::FuelCellBad(FuelCellStatus &fc, int index)
+bool CSMCautionWarningSystem::FuelCellBad(FuelCellStatus& fc, int index)
 {
-	Saturn *sat = (Saturn *)OurVessel;
+	Saturn* sat = (Saturn*)OurVessel;
 
 	bool bad = false;
-	
+
 	//
 	// Various conditions, see Apollo Operations Handbook 2.10.4.2
 	//
 
-	if (fc.H2FlowLBH > 0.161) bad = true;
-	if (fc.O2FlowLBH > 1.276) bad = true;
+	//please refactor me...and the rest of the CWS to be more voltage-based
+	switch (index) {
+		// 4.025 V = 0.161 lb/r H2
+		// 3.9875 V = 1.276 lb/r O2
+
+	case 1:
+		if (sat->FCH2FlowSensor1.Voltage() > 4.025 || sat->FCO2FlowSensor1.Voltage() > 3.9875) { bad = true; }
+		break;
+	case 2:
+		if (sat->FCH2FlowSensor2.Voltage() > 4.025 || sat->FCO2FlowSensor2.Voltage() > 3.9875) { bad = true; }
+		break;
+	case 3:
+		if (sat->FCH2FlowSensor3.Voltage() > 4.025 || sat->FCO2FlowSensor3.Voltage() > 3.9875) { bad = true; }
+		break;
+	}
 
 	// pH > 9 not simulated at the moment
 
@@ -336,6 +350,22 @@ void CSMCautionWarningSystem::TimeStep(double simt)
 			} else {
 				SetLight(CSM_CWS_CRYO_PRESS_LIGHT, false);
 				CryoPressCheckCount = 0;
+			}
+
+			//
+			// SPS FLANGE TEMP HI
+			// Will activate if SPS injector flange temp > 480F
+			// See AOH C+W
+			//
+
+			if (sat->sce.GetVoltage(2, 9) > 4.0 || sat->sce.GetVoltage(2, 10) > 4.0)
+			{
+				SetLight(CSM_CWS_SPS_FLANGE_TEMP_HI, true);
+			}
+
+			else
+			{
+				SetLight(CSM_CWS_SPS_FLANGE_TEMP_HI, false);
 			}
 
 			//
@@ -602,8 +632,15 @@ void CSMCautionWarningSystem::TimeStep(double simt)
 		// of the SuitComprDeltaPMeter to pervent alarms because of the fluctuations during 
 		// high time acceleration. 
 		//
+
+		if (datm.DisplayedSuitComprDeltaPressurePSI < 0.22) {
+			SuitCompDPHighCheckCount++;
+		}
+		else {
+			SuitCompDPHighCheckCount = 0;
+		}
 		
-		SetLight(CSM_CWS_SUIT_COMPRESSOR, (datm.DisplayedSuitComprDeltaPressurePSI < 0.22));
+		SetLight(CSM_CWS_SUIT_COMPRESSOR, SuitCompDPHighCheckCount > 5);
 
 		//
 		// CM RCS warning lights if pressure is below 260psi or above 330psi (AOH RCS 2.5-46),
@@ -694,6 +731,7 @@ bool CSMCautionWarningSystem::LightPowered(int i)
 	case CSM_CWS_CRYO_PRESS_LIGHT:
 	case CSM_CWS_GLYCOL_TEMP_LOW:
 	case CSM_CWS_FC_BUS_DISCONNECT:
+	case CSM_CWS_SPS_FLANGE_TEMP_HI:
 		return false;
 	}
 

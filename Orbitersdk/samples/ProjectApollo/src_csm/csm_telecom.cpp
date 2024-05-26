@@ -891,8 +891,8 @@ void HGA::TimeStep(double simt, double simdt)
 	if (AutoTrackingMode == false) //manual control if switch is set to manual or scanlimit has been hit in reacq mode
 	{
 		double PitchCmd, YawCmd;
-		PitchCmd = -(double)sat->HighGainAntennaPitchPositionSwitch.GetState()*15.0 + 90.0;
-		YawCmd = (double)sat->HighGainAntennaYawPositionSwitch.GetState()*15.0;
+		PitchCmd = -sat->HighGainAntennaPitchPositionSwitch.GetValue()*15.0 + 90.0;
+		YawCmd = sat->HighGainAntennaYawPositionSwitch.GetValue()*15.0;
 
 		if (abs((YawRes * DEG) - YawCmd) < 1.0 && abs((PitchRes * DEG) - PitchCmd) < 1.0) {
 			DriveToReacqSetPoint = false;
@@ -2272,7 +2272,7 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 						case 36:		// H2 TK 1 PRESS
 							return(scale_data(sat->H2Tank1PressSensor.Voltage(), 0.0, 5.0));
 						case 37:		// SPS VLV BODY TEMP
-							return(scale_data(0,0,200));
+							return(scale_data(sat->SPSEngVlvTempSensor.Voltage(), 0.0, 5.0));
 						case 38:		// UNKNOWN - HBR ONLY
 							return(0);
 						case 39:		// H2 TK 2 PRESS
@@ -2286,7 +2286,7 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 						case 43:		// UNKNOWN - HBR ONLY
 							return(0);
 						case 44:		// OX LINE 1 TEMP
-							return(scale_data(0,0,200));
+							return(scale_data(sat->SPSOxidizerLineTempSensor.Voltage(), 0.0, 5.0));
 						case 45:		// SUIT AIR HX OUT TEMP
 							return(scale_data(sat->SuitTempSensor.Voltage(), 0.0, 5.0));
 						case 46:		// UNKNOWN - HBR ONLY
@@ -2316,7 +2316,7 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 						case 58:		// UNKNOWN - HBR ONLY
 							return(0);
 						case 59:		// FU LINE 1 TEMP
-							return(scale_data(0,0,200));
+							return(scale_data(sat->SPSFuelLineTempSensor.Voltage(), 0.0, 5.0));
 						case 60:		// H2 TK 1 TEMP
 							return(scale_data(sat->H2Tank1TempSensor.Voltage(), 0.0, 5.0));
 						case 61:		// NUCLEAR PARTICLE DETECTOR TEMP
@@ -2427,21 +2427,19 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 						case 113:		// SCI EXP #9
 							return(scale_data(0,0,100));
 						case 114:		// H2O DUMP TEMP
-							return(scale_data(0,0,100));
+							return(scale_data(sat->WasteH2ODumpTempSensor.Voltage(), 0.0, 5.0));
 						case 115:		// SCI EXP #10
 							return(scale_data(0,0,100));
 						case 116:		// SCI EXP #11
 							return(scale_data(0,0,100));
 						case 117:		// SPS FU FEED LINE TEMP
-							sat->GetSPSStatus(spsStatus);
-							return(scale_data(spsStatus.PropellantLineTempF,0,200));
+							return(scale_data(sat->SPSFuelFeedTempSensor.Voltage(), 0.0, 5.0));
 						case 118:		// SCI EXP #12
 							return(scale_data(0,0,100));
 						case 119:		// SCI EXP #13
 							return(scale_data(0,0,100));
 						case 120:		// SPS OX FEED LINE TEMP
-							sat->GetSPSStatus(spsStatus);
-							return(scale_data(spsStatus.OxidizerLineTempF,0,200));
+							return(scale_data(sat->SPSOxidizerFeedTempSensor.Voltage(), 0.0, 5.0));
 						case 121:		// SCI EXP #14
 							return(scale_data(0,0,100));
 						case 122:		// SCI EXP #15
@@ -2476,7 +2474,7 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 						case 134:		// UNKNOWN - HBR ONLY
 							return(0);
 						case 135:		// URINE DUMP NOZZLE TEMP
-							return(scale_data(0,0,100));
+							return(scale_data(sat->UrineDumpTempSensor.Voltage(), 0.0, 5.0));
 						case 136:		// SM ENG PKG A TEMP
 							sat->GetRCSStatus( RCS_SM_QUAD_A, rcsStatus );
 							return(scale_data(rcsStatus.PackageTempF, 0, 300));
@@ -2580,19 +2578,19 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 							sat->GetRCSStatus( RCS_SM_QUAD_D, rcsStatus );
 							return(scale_data(rcsStatus.PropellantPressurePSI, 0, 300));
 						case 29:		// FC 1 N2 PRESS
-							return(scale_data(0,0,75));
+							return(scale_data(sat->FCN2PressureSensor1.Voltage(), 0.0, 5.0));
 						case 30:		// FC 2 N2 PRESS
-							return(scale_data(0,0,75));
+							return(scale_data(sat->FCN2PressureSensor2.Voltage(), 0.0, 5.0));
 						case 31:		// FU/OX VLV 1 POS
-							return(scale_data(0,0,90));
+							return(scale_data(sat->SPSEngine.GetInjectorValvePosition(1), 0.0, 90.0));
 						case 32:		// FU/OX VLV 2 POS
-							return(scale_data(0,0,90));
+							return(scale_data(sat->SPSEngine.GetInjectorValvePosition(2), 0.0, 90.0));
 						case 33:		// FU/OX VLV 3 POS
-							return(scale_data(0,0,90));
+							return(scale_data(sat->SPSEngine.GetInjectorValvePosition(3), 0.0, 90.0));
 						case 34:		// FU/OX VLV 4 POS
-							return(scale_data(0,0,90));
+							return(scale_data(sat->SPSEngine.GetInjectorValvePosition(4), 0.0, 90.0));
 						case 35:		// FC 3 N2 PRESS
-							return(scale_data(0,0,75));
+							return(scale_data(sat->FCN2PressureSensor3.Voltage(), 0.0, 5.0));
 						case 36:		// UNKNOWN - HBR ONLY
 							return(0);
 						case 37:		// SUIT-CABIN DELTA PRESS
@@ -2676,23 +2674,17 @@ unsigned char PCM::measure(int channel, int type, int ccode){
 						case 76:		// FC 1 CUR
 							return scale_data(sat->sce.GetVoltage(1, 4), 0.0, 5.0);
 						case 77:		// FC 1 H2 FLOW
-							sat->GetFuelCellStatus( 1, fcStatus );
-							return(scale_data(fcStatus.H2FlowLBH, 0, 0.2));
+							return scale_data(sat->FCH2FlowSensor1.Voltage(), 0, 5.0);
 						case 78:		// FC 2 H2 FLOW
-							sat->GetFuelCellStatus( 2, fcStatus );
-							return(scale_data(fcStatus.H2FlowLBH, 0, 0.2));
+							return scale_data(sat->FCH2FlowSensor2.Voltage(), 0, 5.0);
 						case 79:		// FC 3 H2 FLOW
-							sat->GetFuelCellStatus( 3, fcStatus );
-							return(scale_data(fcStatus.H2FlowLBH, 0, 0.2));
+							return scale_data(sat->FCH2FlowSensor3.Voltage(), 0, 5.0);
 						case 80:		// FC 1 O2 FLOW
-							sat->GetFuelCellStatus( 1, fcStatus );
-							return(scale_data(fcStatus.O2FlowLBH, 0, 1.6));
+							return scale_data(sat->FCO2FlowSensor1.Voltage(), 0, 5.0);
 						case 81:		// FC 2 O2 FLOW
-							sat->GetFuelCellStatus( 2, fcStatus );
-							return(scale_data(fcStatus.O2FlowLBH, 0, 1.6));
+							return scale_data(sat->FCO2FlowSensor2.Voltage(), 0, 5.0);
 						case 82:		// FC 3 O2 FLOW
-							sat->GetFuelCellStatus( 3, fcStatus );
-							return(scale_data(fcStatus.O2FlowLBH, 0, 1.6));
+							return scale_data(sat->FCO2FlowSensor3.Voltage(), 0, 5.0);
 						case 83:		// UNKNOWN - HBR ONLY
 							return(0);
 						case 84:		// FC 2 CUR
